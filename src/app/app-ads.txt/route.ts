@@ -3,53 +3,11 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-function parseCsvField(line: string): string {
-  let result = '';
-  let i = 0;
-  let inQuotes = false;
-
-  while (i < line.length) {
-    const char = line[i];
-    const nextChar = line[i + 1];
-
-    if (inQuotes) {
-      if (char === '"' && nextChar === '"') {
-        result += '"';
-        i += 2;
-      } else if (char === '"') {
-        inQuotes = false;
-        i += 1;
-      } else {
-        result += char;
-        i += 1;
-      }
-    } else {
-      if (char === '"') {
-        inQuotes = true;
-        i += 1;
-      } else if (char === ',') {
-        // Return first field only; app-ads.txt only needs one value per line
-        return result;
-      } else {
-        result += char;
-        i += 1;
-      }
-    }
-  }
-
-  return result;
-}
-
 function cleanCsvToAppAds(content: string): string {
   return content
     .split(/\r?\n/)
-    .map(line => {
-      const trimmed = line.trim();
-      if (trimmed === '' || trimmed.startsWith('#')) {
-        return trimmed;
-      }
-      return parseCsvField(line);
-    })
+    .map(line => line.trim())
+    .filter(line => line !== '')
     .join('\n');
 }
 
